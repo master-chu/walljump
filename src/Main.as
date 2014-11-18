@@ -26,7 +26,7 @@ package {
     public function step(e:Event):void {
       if (pressingLeft){ player.moveLeft(); }
       if (pressingRight) { player.moveRight(); }
-      
+      if (!pressingLeft && !pressingRight && !player.isMidAir()) { player.enactFriction(); }
       player.step();
       block.checkObj(player, 0);
     }
