@@ -5,13 +5,11 @@ package {
 
 	public class Main extends Sprite {
 		
-    private var pressingLeft:Boolean = false;
-    private var pressingRight:Boolean = false;
     private var player:Player = new Player();
     private var block:Block = new Block();
     
 		public function Main():void {
-      player.x = 500;
+      player.x = 300;
       player.y = 300;
       addChild(player);
       block.x = 300;
@@ -24,9 +22,6 @@ package {
     
     // runs on each frame increment
     public function step(e:Event):void {
-      if (pressingLeft){ player.moveLeft(); }
-      if (pressingRight) { player.moveRight(); }
-      if (!pressingLeft && !pressingRight && !player.isMidAir()) { player.enactFriction(); }
       player.step();
       block.checkObj(player, 0);
     }
@@ -44,13 +39,13 @@ package {
         // left / a
         case 37:
         case 65:
-          pressingLeft = isPressed;
+          player.pressingLeft = isPressed;
           break;
           
         // right / d
         case 39:
         case 68:
-          pressingRight = isPressed;
+          player.pressingRight = isPressed;
           break;
           
         // up / w

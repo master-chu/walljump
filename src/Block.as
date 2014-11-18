@@ -23,7 +23,7 @@ package  {
       }
       if (Math.abs(obj.x - x) >= width / 2 + obj.width / 2 && obj.onBlock == place) {        
         obj.onBlock = -1;
-        obj.floor = 450;
+        obj.floor = 800;
       }
       if (obj.y - obj.height / 2 < y + height / 2 && obj.y > y && Math.abs(obj.x - x) < width / 2 + obj.width / 2) {
         obj.y = y + height / 2 + obj.height / 2;

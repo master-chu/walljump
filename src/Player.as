@@ -8,16 +8,21 @@ package
     public const fallAcceleration:int = 1;
     public var moveSpeed:int = 0;
     public const moveAcceleration:int = 1;
-    public var topMoveSpeed:int = 10;
+    public var maxMoveSpeed:int = 10;
     public const friction:int = 1;
     public const jumpStrength:int = 15;
     public const wallJumpStrength:int = 7;
     public var allowedJumps:int = 2;
     public var remainingJumps:int = 2;
     public var wallJumpLeeway:int = 30;
+    public const maxWallSlideSpeed:int = 10;
+    public const minWallSlideSpeed:int = 4;
     
-    public var floor:int = 450;
-    public var stageWidth:int = 800;
+    public var pressingLeft:Boolean = false;
+    public var pressingRight:Boolean = false;
+        
+    public var floor:int = 800;
+    public var stageWidth:int = 450;
     public var onBlock:int = -1;
     
 		public function Player()
@@ -39,7 +44,6 @@ package
           this.remainingJumps = this.allowedJumps;
         }  
       }
-      
       if(this.hasRemainingJumps()){
         this.fallSpeed = 0 - this.jumpStrength;
         this.remainingJumps--;
@@ -51,20 +55,19 @@ package
     }
     public function wallJumpLeft():void {
       this.moveSpeed -= this.wallJumpStrength;
-      trace("wall jump left");
     }
     
     public function moveLeft():void {
       var newSpeed:int = this.moveSpeed - moveAcceleration;
-      if (Math.abs(newSpeed) > this.topMoveSpeed) {
-        newSpeed = 0 - this.topMoveSpeed;
+      if (Math.abs(newSpeed) > this.maxMoveSpeed) {
+        newSpeed = 0 - this.maxMoveSpeed;
       }
       this.moveSpeed = newSpeed;
     }
     public function moveRight():void {
       var newSpeed:int = this.moveSpeed + moveAcceleration;
-      if (Math.abs(newSpeed) > this.topMoveSpeed) {
-        newSpeed = this.topMoveSpeed;
+      if (Math.abs(newSpeed) > this.maxMoveSpeed) {
+        newSpeed = this.maxMoveSpeed;
       }
       this.moveSpeed = newSpeed;
     }
@@ -86,6 +89,15 @@ package
         this.moveSpeed = 0;
       }
     }
+    public function slideDownWall():void {
+      var newFallSpeed:int = this.fallSpeed;
+      newFallSpeed -= this.friction;
+      if (newFallSpeed > this.maxWallSlideSpeed) {
+        newFallSpeed = this.maxWallSlideSpeed;
+      }
+      this.fallSpeed = newFallSpeed;     
+    }
+    
     /* State */
     public function isMidAir():Boolean {
       return this.y + this.height / 2 < floor;
@@ -107,6 +119,9 @@ package
       var rightEdgeX:int = this.x + this.width / 2;
       return rightEdgeX >= stageWidth;
     }
+    public function canWallSlide():Boolean {
+      return this.fallSpeed > this.minWallSlideSpeed;
+    }
 
     // lots of recomputation
     public function canWallJumpLeft():Boolean {
@@ -125,8 +140,34 @@ package
       return this.remainingJumps > 0;
     }
     
+    // TODO: clean this mess up
     public function step():void {
+      if (this.pressingLeft) { 
+        this.moveLeft(); 
+      }
+      else if (this.pressingRight) { 
+        this.moveRight(); 
+      }
+      else if (!this.isMidAir()) { 
+        this.enactFriction(); 
+      }      
+      
       this.move();
+      
+      if (this.isTouchingLeftWall()) {
+        this.x = this.width / 2;
+        this.moveSpeed = 0;
+        if (this.canWallSlide() && this.pressingLeft) {
+          this.slideDownWall();
+        }
+      }
+      if (this.isTouchingRightWall()) {
+        this.x = this.stageWidth - this.width / 2;
+        this.moveSpeed = 0;
+        if (this.canWallSlide() && this.pressingRight) {
+          this.slideDownWall();
+        }
+      }
       
       this.y += fallSpeed;
       if (this.isMidAir()) {
@@ -138,14 +179,6 @@ package
         this.remainingJumps = this.allowedJumps;
       }
       
-      if (this.isTouchingLeftWall()) {
-        this.x = this.width / 2;
-        this.moveSpeed = 0;
-      }
-      if (this.isTouchingRightWall()) {
-        this.x = 800 - this.width / 2;
-        this.moveSpeed = 0;
-      }
     }
 	
 	}
